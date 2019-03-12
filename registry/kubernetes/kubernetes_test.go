@@ -439,7 +439,7 @@ func TestWatcher(t *testing.T) {
 	// setup svc
 	svc1 := &registry.Service{Name: "foo.service", Version: "1"}
 	register(r, "pod-1", svc1)
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond)
 
 	var wg sync.WaitGroup
 	wg.Add(3)
@@ -455,7 +455,7 @@ func TestWatcher(t *testing.T) {
 	// setup svc
 	svc2 := &registry.Service{Name: "foo.service", Version: "1"}
 	register(r, "pod-2", svc2)
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond)
 
 	c.Select("foo.service", selector.WithFilter(func(svcs []*registry.Service) []*registry.Service {
 		defer wg.Done()
@@ -467,9 +467,11 @@ func TestWatcher(t *testing.T) {
 
 	// deregister
 	os.Setenv("HOSTNAME", "pod-1")
-	time.Sleep(time.Millisecond * 100)
+	r.Deregister(svc1)
+	time.Sleep(time.Millisecond)
 
 	c.Select("foo.service", selector.WithFilter(func(svcs []*registry.Service) []*registry.Service {
+
 		defer wg.Done()
 		if !hasServices(svcs, []*registry.Service{svc2}) {
 			t.Fatal("expected services to match")
@@ -479,7 +481,7 @@ func TestWatcher(t *testing.T) {
 
 	// remove pods
 	teardownRegistry()
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond)
 
 	if _, err := c.Select("foo.service"); err != registry.ErrNotFound {
 		log.Fatal("expected registry.ErrNotFound")
@@ -502,9 +504,9 @@ func TestWatcher(t *testing.T) {
 
 func hasNodes(a, b []*registry.Node) bool {
 	found := 0
-	for _, nodeA := range a {
-		for _, nodeB := range b {
-			if nodeA.Id == nodeB.Id {
+	for _, aV := range a {
+		for _, bV := range b {
+			if reflect.DeepEqual(aV, bV) {
 				found++
 				break
 			}

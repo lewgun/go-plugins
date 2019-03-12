@@ -19,20 +19,20 @@ func TestBlackListFilter(t *testing.T) {
 	defer bl.Close()
 
 	services := []*registry.Service{
-		&registry.Service{
+		{
 			Name: "foo",
 			Nodes: []*registry.Node{
-				&registry.Node{
+				{
 					Id:      "foo-1",
 					Address: "localhost",
 					Port:    10001,
 				},
-				&registry.Node{
+				{
 					Id:      "foo-2",
 					Address: "localhost",
 					Port:    10002,
 				},
-				&registry.Node{
+				{
 					Id:      "foo-3",
 					Address: "localhost",
 					Port:    10002,

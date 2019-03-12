@@ -38,17 +38,17 @@ func TestBlackList(t *testing.T) {
 	r.Register(&registry.Service{
 		Name: "test",
 		Nodes: []*registry.Node{
-			&registry.Node{
+			{
 				Id:      "test-1",
 				Address: "localhost",
 				Port:    10001,
 			},
-			&registry.Node{
+			{
 				Id:      "test-2",
 				Address: "localhost",
 				Port:    10002,
 			},
-			&registry.Node{
+			{
 				Id:      "test-3",
 				Address: "localhost",
 				Port:    10002,

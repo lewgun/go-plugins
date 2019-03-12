@@ -31,6 +31,9 @@ type grpcClient struct {
 	pool *pool
 }
 
+type MethodKey struct{}
+type RemoteAddrKey struct{}
+
 func init() {
 	encoding.RegisterCodec(jsonCodec{})
 	encoding.RegisterCodec(bytesCodec{})
@@ -119,7 +122,18 @@ func (g *grpcClient) call(ctx context.Context, node *registry.Node, req client.R
 	ch := make(chan error, 1)
 
 	go func() {
-		err := cc.Invoke(ctx, methodToGRPC(req.Endpoint(), req.Body()), req.Body(), rsp, grpc.CallContentSubtype(cf.String()))
+		v := ctx.Value(MethodKey{})
+		var method string
+		if method == v {
+
+			fmt.Println("get nil method lewgun")
+			method = methodToGRPC(req.Endpoint(), req.Body())
+		} else {
+			method = v.(string)
+		}
+		fmt.Println("vallllll", method)
+
+		err := cc.Invoke(ctx, method, req.Body(), rsp, grpc.CallContentSubtype(cf.String()))
 		ch <- microError(err)
 	}()
 
@@ -484,7 +498,7 @@ func (g *grpcClient) String() string {
 	return "grpc"
 }
 
-func newClient(opts ...client.Option) client.Client {
+func newClient(ctx context.Context, opts ...client.Option) client.Client {
 	options := client.Options{
 		Codecs: make(map[string]codec.NewCodec),
 		CallOptions: client.CallOptions{
@@ -520,6 +534,11 @@ func newClient(opts ...client.Option) client.Client {
 		)
 	}
 
+	remote := ctx.Value(RemoteAddrKey{})
+	if remote != nil {
+		options.CallOptions.Address = remote.(string)
+	}
+
 	rc := &grpcClient{
 		once: sync.Once{},
 		opts: options,
@@ -537,5 +556,9 @@ func newClient(opts ...client.Option) client.Client {
 }
 
 func NewClient(opts ...client.Option) client.Client {
-	return newClient(opts...)
+	return newClient(context.TODO(), opts...)
+}
+
+func NewContextClient(ctx context.Context, opts ...client.Option) client.Client {
+	return newClient(ctx, opts...)
 }

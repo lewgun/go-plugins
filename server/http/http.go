@@ -180,7 +180,7 @@ func (h *httpServer) Register() error {
 	}
 	h.registered = true
 
-	for sb, _ := range h.subscribers {
+	for sb := range h.subscribers {
 		handler := h.createSubHandler(sb, opts)
 		var subOpts []broker.SubscribeOption
 		if queue := sb.Options().Queue; len(queue) > 0 {
@@ -247,14 +247,8 @@ func (h *httpServer) Start() error {
 		return errors.New("Server required http.Handler")
 	}
 
-	if err = opts.Broker.Connect(); err != nil {
-		return err
-	}
-
 	// register
-	if err = h.Register(); err != nil {
-		return err
-	}
+	h.Register()
 
 	go http.Serve(ln, handler)
 
@@ -292,7 +286,7 @@ func (h *httpServer) Start() error {
 		opts.Broker.Disconnect()
 	}()
 
-	return nil
+	return opts.Broker.Connect()
 }
 
 func (h *httpServer) Stop() error {

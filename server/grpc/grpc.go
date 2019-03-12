@@ -105,10 +105,6 @@ func (g *grpcServer) configure(opts ...server.Option) {
 		gopts = append(gopts, grpc.Creds(creds))
 	}
 
-	if opts := g.getGrpcOptions(); opts != nil {
-		gopts = append(gopts, opts...)
-	}
-
 	g.srv = grpc.NewServer(gopts...)
 }
 
@@ -131,26 +127,6 @@ func (g *grpcServer) getCredentials() credentials.TransportCredentials {
 		}
 	}
 	return nil
-}
-
-func (g *grpcServer) getGrpcOptions() []grpc.ServerOption {
-	if g.opts.Context == nil {
-		return nil
-	}
-
-	v := g.opts.Context.Value(grpcOptions{})
-
-	if v == nil {
-		return nil
-	}
-
-	opts, ok := v.([]grpc.ServerOption)
-
-	if !ok {
-		return nil
-	}
-
-	return opts
 }
 
 func (g *grpcServer) handler(srv interface{}, stream grpc.ServerStream) error {
@@ -522,7 +498,7 @@ func (g *grpcServer) Register() error {
 
 	g.registered = true
 
-	for sb, _ := range g.subscribers {
+	for sb := range g.subscribers {
 		handler := g.createSubHandler(sb, g.opts)
 		var opts []broker.SubscribeOption
 		if queue := sb.Options().Queue; len(queue) > 0 {
@@ -618,24 +594,11 @@ func (g *grpcServer) Start() error {
 	g.opts.Address = ts.Addr().String()
 	g.Unlock()
 
-	// connect to the broker
-	if err := config.Broker.Connect(); err != nil {
-		return err
-	}
-
-	log.Logf("Broker [%s] Listening on %s", config.Broker.String(), config.Broker.Address())
-
-	// announce self to the world
-	if err := g.Register(); err != nil {
-		log.Log("Server register error: ", err)
-	}
+	// register
+	g.Register()
 
 	// micro: go ts.Accept(s.accept)
-	go func() {
-		if err := g.srv.Serve(ts); err != nil {
-			log.Log("gRPC Server start error: ", err)
-		}
-	}()
+	go g.srv.Serve(ts)
 
 	go func() {
 		t := new(time.Ticker)
@@ -663,10 +626,8 @@ func (g *grpcServer) Start() error {
 			}
 		}
 
-		// deregister self
-		if err := g.Deregister(); err != nil {
-			log.Log("Server deregister error: ", err)
-		}
+		// deregister
+		g.Deregister()
 
 		// wait for waitgroup
 		if wait(g.opts.Context) {
@@ -683,7 +644,7 @@ func (g *grpcServer) Start() error {
 		config.Broker.Disconnect()
 	}()
 
-	return nil
+	return config.Broker.Connect()
 }
 
 func (g *grpcServer) Stop() error {

@@ -21,35 +21,35 @@ type testcase struct {
 type assertFn func(req *http.Request) bool
 
 var tests = []testcase{
-	testcase{
+	{
 		ReqFn: func(opts *Options) *Request {
 			return NewRequest(opts).Get().Resource("services")
 		},
 		Method: "GET",
 		URI:    "/api/v1/namespaces/default/services/",
 	},
-	testcase{
+	{
 		ReqFn: func(opts *Options) *Request {
 			return NewRequest(opts).Get().Resource("services").Name("foo")
 		},
 		Method: "GET",
 		URI:    "/api/v1/namespaces/default/services/foo",
 	},
-	testcase{
+	{
 		ReqFn: func(opts *Options) *Request {
 			return NewRequest(opts).Get().Resource("services").Namespace("test").Name("bar")
 		},
 		Method: "GET",
 		URI:    "/api/v1/namespaces/test/services/bar",
 	},
-	testcase{
+	{
 		ReqFn: func(opts *Options) *Request {
 			return NewRequest(opts).Get().Resource("pods").Params(&Params{LabelSelector: map[string]string{"foo": "bar"}})
 		},
 		Method: "GET",
 		URI:    "/api/v1/namespaces/default/pods/?labelSelectors=foo%3Dbar",
 	},
-	testcase{
+	{
 		ReqFn: func(opts *Options) *Request {
 			return NewRequest(opts).Post().Resource("services").Name("foo").Body(map[string]string{"foo": "bar"})
 		},
@@ -57,7 +57,7 @@ var tests = []testcase{
 		URI:    "/api/v1/namespaces/default/services/foo",
 		Body:   map[string]string{"foo": "bar"},
 	},
-	testcase{
+	{
 		ReqFn: func(opts *Options) *Request {
 			return NewRequest(opts).Put().Resource("endpoints").Name("baz").Body(map[string]string{"bam": "bar"})
 		},
@@ -65,7 +65,7 @@ var tests = []testcase{
 		URI:    "/api/v1/namespaces/default/endpoints/baz",
 		Body:   map[string]string{"bam": "bar"},
 	},
-	testcase{
+	{
 		ReqFn: func(opts *Options) *Request {
 			return NewRequest(opts).Patch().Resource("endpoints").Name("baz").Body(map[string]string{"bam": "bar"})
 		},
@@ -73,7 +73,7 @@ var tests = []testcase{
 		URI:    "/api/v1/namespaces/default/endpoints/baz",
 		Body:   map[string]string{"bam": "bar"},
 	},
-	testcase{
+	{
 		ReqFn: func(opts *Options) *Request {
 			return NewRequest(opts).Patch().Resource("endpoints").Name("baz").SetHeader("foo", "bar")
 		},

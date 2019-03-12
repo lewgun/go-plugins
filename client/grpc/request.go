@@ -39,8 +39,9 @@ func methodToGRPC(method string, request interface{}) string {
 	if len(mParts) != 2 {
 		return method
 	}
+	fmt.Printf("/pb.%s.%s/%s", pkg, mParts[0], mParts[1])
 	// return /pkg.Foo/Bar
-	return fmt.Sprintf("/%s.%s/%s", pkg, mParts[0], mParts[1])
+	return fmt.Sprintf("/pb.%s.%s/%s", pkg, mParts[0], mParts[1])
 }
 
 func newGRPCRequest(service, method string, request interface{}, contentType string, reqOpts ...client.RequestOption) client.Request {

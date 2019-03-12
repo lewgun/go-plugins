@@ -48,7 +48,7 @@ func TestGRPCClient(t *testing.T) {
 		Name:    "test",
 		Version: "test",
 		Nodes: []*registry.Node{
-			&registry.Node{
+			{
 				Id:      "test-1",
 				Address: addr,
 				Port:    port,
